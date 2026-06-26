@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-26T20:48:08.561Z",
+  "generatedAt": "2026-06-26T21:03:09.489Z",
   "mode": "shared",
   "criteria": {
     "beds": "4-5 BR",
@@ -20,7 +20,7 @@
   "listings": [
     {
       "id": "se-233-east-3-street-new_york-4g",
-      "source": "StreetEasy",
+      "source": "streeteasy",
       "url": "https://streeteasy.com/building/233-east-3-street-new_york/4g",
       "building": "233 East 3rd St",
       "unit": "4G",
@@ -64,7 +64,7 @@
     },
     {
       "id": "se-510-east-20-street-new_york-01f",
-      "source": "StreetEasy",
+      "source": "streeteasy",
       "url": "https://streeteasy.com/building/510-east-20-street-new_york/01f",
       "building": "520 East 20th St (StuyTown)",
       "unit": "1F",
