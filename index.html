@@ -75,6 +75,20 @@
   .btn.view{background:var(--acc2);border-color:var(--acc2);color:#fff;font-weight:600}
   .btn.on{background:rgba(239,83,80,.18);border-color:var(--pass);color:var(--pass)}
   .empty{color:var(--mut);text-align:center;padding:60px}
+  .modal{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.6);display:none;align-items:flex-start;justify-content:center;padding:40px 16px;overflow:auto}
+  .modal.open{display:flex}
+  .modal-inner{background:var(--panel);border:1px solid var(--line);border-radius:14px;max-width:820px;width:100%;padding:18px 20px}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px}
+  .modal-head h2{margin:0;font-size:18px}
+  .tour{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--line)}
+  .tour .when{min-width:165px;font-weight:700;color:var(--showing);font-size:13px}
+  .tour .ta{font-weight:600} .tour .tmeta{color:var(--mut);font-size:12px}
+  .tour .ttype{font-size:10.5px;background:var(--panel2);border:1px solid var(--line);border-radius:6px;padding:2px 7px;color:var(--mut);margin-left:6px}
+  .tour a{color:var(--acc);font-size:12px}
+  .ct{display:grid;grid-template-columns:1.3fr 1.2fr 1fr 1.4fr;gap:8px;padding:9px 0;border-bottom:1px solid var(--line);font-size:12.5px;align-items:center}
+  .ct .cn{font-weight:600} .ct .cmut{color:var(--mut)} .ct a{color:var(--acc)}
+  .ct .stat{font-size:10.5px;padding:2px 7px;border-radius:6px}
+  .stat-reply{background:rgba(245,166,35,.18);color:var(--showing)} .stat-neg{background:rgba(33,192,122,.18);color:var(--new)} .stat-wait{background:#262b35;color:var(--mut)}
   #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#fff;color:#111;padding:10px 18px;border-radius:10px;font-weight:600;font-size:13px;opacity:0;pointer-events:none;transition:.25s;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:50}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
@@ -119,11 +133,14 @@
       <option value="new">New first</option>
       <option value="beds">Most beds</option>
     </select>
+    <button id="toursBtn" class="btn ctrlbtn">📅 Tours</button>
+    <button id="contactsBtn" class="btn ctrlbtn ghost" style="display:none">📇 Contacts</button>
     <button id="markAll" class="btn ctrlbtn ghost">Mark all seen</button>
-    <button id="export" class="btn ctrlbtn">Export CSV</button>
+    <button id="export" class="btn ctrlbtn ghost">Export CSV</button>
   </div>
 </header>
 <main><div id="grid"></div></main>
+<div id="modal" class="modal"><div class="modal-inner"><div class="modal-head"><h2 id="modalTitle"></h2><button id="modalClose" class="btn">✕ Close</button></div><div id="modalBody"></div></div></div>
 <div id="toast"></div>
 <script>
 (function(){

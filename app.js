@@ -221,6 +221,13 @@
     });
     document.getElementById("export").addEventListener("click", exportCsv);
 
+    // Tours (both views) + Contacts (owner only)
+    document.getElementById("toursBtn").addEventListener("click", openTours);
+    var cBtn = document.getElementById("contactsBtn");
+    if (OWNER && (DATA.contacts || []).length) { cBtn.style.display = ""; cBtn.addEventListener("click", openContacts); }
+    document.getElementById("modalClose").addEventListener("click", closeModal);
+    document.getElementById("modal").addEventListener("click", function (e) { if (e.target.id === "modal") closeModal(); });
+
     document.getElementById("grid").addEventListener("click", function (e) {
       var btn = e.target.closest("[data-act]"); if (!btn) return;
       var id = e.target.closest(".card").getAttribute("data-id");
@@ -236,6 +243,36 @@
       var a = e.target.closest("a.view"); if (!a) return;
       var id = e.target.closest(".card").getAttribute("data-id"); markSeen(id); setTimeout(render, 50);
     });
+  }
+
+  function closeModal() { document.getElementById("modal").classList.remove("open"); }
+  function openModal(title, html) {
+    document.getElementById("modalTitle").textContent = title;
+    document.getElementById("modalBody").innerHTML = html;
+    document.getElementById("modal").classList.add("open");
+  }
+  function openTours() {
+    var tours = DATA.tours || [];
+    if (!tours.length) { openModal("\uD83D\uDCC5 Tours", '<p class="cmut">No tours posted yet. This updates automatically.</p>'); return; }
+    var html = tours.map(function (t) {
+      var vid = t.video ? '<a href="' + esc(t.video.split(" ")[0]) + '" target="_blank" rel="noopener">\u25B6 Watch video</a> ' + esc(t.video.indexOf("pw") > -1 ? "(" + t.video.split("(")[1] : "") : "";
+      return '<div class="tour"><div class="when">' + esc(t.when) + '</div>' +
+        '<div><div class="ta">' + esc(t.addr) + '<span class="ttype">' + esc(t.type) + '</span></div>' +
+        '<div class="tmeta">' + esc(t.neighborhood || "") + (t.note ? " \u00b7 " + esc(t.note) : "") + '</div>' + vid + '</div></div>';
+    }).join("");
+    openModal("\uD83D\uDCC5 Apartment Tours (" + tours.length + ")", html);
+  }
+  function openContacts() {
+    var cs = DATA.contacts || [];
+    var statCls = function (s) { return /negotiation/.test(s) ? "stat-neg" : /your reply/.test(s) ? "stat-reply" : "stat-wait"; };
+    var html = '<div class="ct" style="font-weight:700;color:#cfd6e4"><div>Broker</div><div>Company</div><div>Phone</div><div>Listings / Status</div></div>' +
+      cs.map(function (c) {
+        return '<div class="ct"><div class="cn">' + esc(c.name || "?") + '<div class="cmut">' + esc(c.channel) + '</div></div>' +
+          '<div>' + esc(c.company || "") + '</div>' +
+          '<div>' + (c.phone ? '<a href="tel:' + esc(c.phone.replace(/[^\d+]/g, "")) + '">' + esc(c.phone) + '</a>' : '<span class="cmut">\u2014</span>') + '<div class="cmut">' + esc(c.email || "") + '</div></div>' +
+          '<div><div class="cmut">' + esc((c.listings || []).join(", ")) + '</div><span class="stat ' + statCls(c.status) + '">' + esc(c.status) + '</span></div></div>';
+      }).join("");
+    openModal("\uD83D\uDCC7 Broker Contacts (" + cs.length + ") \u2014 private", html);
   }
 
   function exportCsv() {
