@@ -40,10 +40,15 @@
   // ---------- UI state ----------
   var ui = {
     q: "", hood: "all", status: "all", beds: "all",
-    minP: "", maxP: "", sort: "hood", view: "grouped",
+    minP: "", maxP: "", sort: "source", view: "grouped",
   };
+  var SRC_META = { streeteasy: "StreetEasy", renthop: "RentHop", craigslist: "Craigslist", zillow: "Zillow", apartments: "Apartments.com" };
+  // reliability ranking: most trusted NYC sources first
+  var SOURCE_ORDER = ["streeteasy", "zillow", "renthop", "apartments", "craigslist"];
+  var SRC_LABEL = { streeteasy: "\uD83C\uDFE2 StreetEasy", zillow: "\uD83C\uDFE2 Zillow", renthop: "\uD83C\uDFE2 RentHop", apartments: "\uD83C\uDFE2 Apartments.com", craigslist: "\uD83D\uDCCC Craigslist (no-fee / by-owner)" };
+  var SRC_NOTE = { streeteasy: "Most reliable for NYC", zillow: "Highly reliable", renthop: "Reliable aggregator", apartments: "Aggregator", craigslist: "By-owner \u2014 verify carefully" };
 
-  var SRC_META = { streeteasy: "StreetEasy", renthop: "RentHop", craigslist: "Craigslist" };
+
   var MODE = DATA.mode || "owner"; // "owner" = full private view; "shared" = roommates, listings only
   var OWNER = MODE === "owner";
 
@@ -91,6 +96,11 @@
       if (s === "price_desc") return (b.priceNum || -1) - (a.priceNum || -1);
       if (s === "new") return (b.isNew ? 1 : 0) - (a.isNew ? 1 : 0);
       if (s === "beds") return (b.beds || 0) - (a.beds || 0);
+      if (s === "source") {
+        var ia = SOURCE_ORDER.indexOf(a.source); var ib = SOURCE_ORDER.indexOf(b.source);
+        if (ia < 0) ia = 99; if (ib < 0) ib = 99;
+        return ia - ib || (a.priceNum || 1e9) - (b.priceNum || 1e9);
+      }
       return a.neighborhood.localeCompare(b.neighborhood) || (a.priceNum || 0) - (b.priceNum || 0);
     });
   }
@@ -145,12 +155,17 @@
     var host = document.getElementById("grid");
     if (!filtered.length) { host.innerHTML = '<div class="empty">No listings match these filters.</div>'; return; }
 
-    if (ui.view === "grouped" && ui.sort === "hood") {
+    if (ui.sort === "hood" || ui.sort === "source") {
+      var bySource = ui.sort === "source";
       var groups = {};
-      filtered.forEach(function (l) { (groups[l.neighborhood] = groups[l.neighborhood] || []).push(l); });
-      var keys = Object.keys(groups).sort();
+      filtered.forEach(function (l) { var k = bySource ? l.source : l.neighborhood; (groups[k] = groups[k] || []).push(l); });
+      var keys = Object.keys(groups);
+      if (bySource) keys.sort(function (a, b) { var ia = SOURCE_ORDER.indexOf(a), ib = SOURCE_ORDER.indexOf(b); return (ia < 0 ? 99 : ia) - (ib < 0 ? 99 : ib); });
+      else keys.sort();
       host.innerHTML = keys.map(function (k) {
-        return '<section class="hood"><h2>' + esc(k) + ' <span class="cnt">' + groups[k].length + "</span></h2>" +
+        var title = bySource ? (SRC_LABEL[k] || k) : esc(k);
+        var note = bySource && SRC_NOTE[k] ? '<span class="srcnote">' + SRC_NOTE[k] + '</span>' : "";
+        return '<section class="hood"><h2>' + title + ' <span class="cnt">' + groups[k].length + "</span>" + note + "</h2>" +
           '<div class="cards">' + groups[k].map(card).join("") + "</div></section>";
       }).join("");
     } else {

@@ -34,6 +34,7 @@
   main{padding:18px 20px 60px}
   .hood h2{font-size:15px;margin:22px 0 10px;display:flex;align-items:center;gap:8px;color:#cfd6e4}
   .hood h2 .cnt{font-size:12px;background:var(--panel2);border:1px solid var(--line);border-radius:20px;padding:1px 9px;color:var(--mut)}
+  .hood h2 .srcnote{font-size:11px;color:var(--mut);font-weight:400;margin-left:4px}
   .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(290px,1fr));gap:14px}
   .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative;display:flex;flex-direction:column;transition:border-color .15s,transform .1s}
   .card:hover{border-color:#3a4456;transform:translateY(-1px)}
@@ -137,6 +138,7 @@
     <input id="minP" type="number" placeholder="Min $" />
     <input id="maxP" type="number" placeholder="Max $" />
     <select id="sortSel">
+      <option value="source" selected>Sort: Source (reliability)</option>
       <option value="hood">Sort: Location</option>
       <option value="price_asc">Price ↑</option>
       <option value="price_desc">Price ↓</option>
