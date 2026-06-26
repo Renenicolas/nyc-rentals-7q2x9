@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-26T20:28:52.553Z",
+  "generatedAt": "2026-06-26T20:30:17.000Z",
   "mode": "shared",
   "criteria": {
     "beds": "4-5 BR",
@@ -2930,7 +2930,7 @@
       "addr": "236 East 5th Street #F4",
       "neighborhood": "East Village",
       "type": "In-person",
-      "when": "By appt (NextStep)",
+      "when": "By appt",
       "video": null,
       "note": ""
     },
@@ -2938,7 +2938,7 @@
       "addr": "176 Stanton Street #1R",
       "neighborhood": "Lower East Side",
       "type": "In-person",
-      "when": "By appt (NextStep)",
+      "when": "By appt",
       "video": null,
       "note": ""
     },
@@ -2962,7 +2962,7 @@
       "addr": "131 East 29th Street #4",
       "neighborhood": "Kips Bay",
       "type": "By appt",
-      "when": "Private showings being scheduled (DALLAL)",
+      "when": "Private showings being scheduled",
       "video": null,
       "note": ""
     },
