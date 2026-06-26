@@ -44,6 +44,8 @@
   };
 
   var SRC_META = { streeteasy: "StreetEasy", renthop: "RentHop", craigslist: "Craigslist" };
+  var MODE = DATA.mode || "owner"; // "owner" = full private view; "shared" = roommates, listings only
+  var OWNER = MODE === "owner";
 
   // ---------- helpers ----------
   function fmt$(n) { return n == null ? "--" : "$" + n.toLocaleString(); }
@@ -95,7 +97,7 @@
 
   // ---------- rendering ----------
   function card(l) {
-    var sm = STATUS_META[l.status] || STATUS_META.seen;
+    var sm = STATUS_META[OWNER ? l.status : (l.isNew ? "new" : "seen")] || STATUS_META.seen;
     var photo = l.photo ? '<div class="ph" style="background-image:url(\'' + esc(l.photo) + '\')"></div>'
       : '<div class="ph noph">No photo</div>';
     var pp = l.perPerson4 ? '<span class="pp">' + fmt$(l.perPerson4) + '/person (÷4)</span>' : "";
@@ -116,13 +118,14 @@
       '<div class="meta">' + esc(l.neighborhood) + ' · ' + (l.beds || "?") + " bd / " + (l.baths || "?") + " ba" + (l.sqft ? " · " + l.sqft + " ft²" : "") + "</div>" +
       '<div class="badges"><span class="badge ' + sm.cls + '">' + sm.label + "</span>" + (l.offMarket ? '<span class="badge s-off">Off-market</span>' : "") + "</div>" +
       (amen ? '<div class="chips">' + amen + "</div>" : "") +
-      brokerHtml + showHtml + noteHtml +
+      (OWNER ? (brokerHtml + showHtml + noteHtml) : "") +
       '<div class="actions">' +
       '<a class="btn view" href="' + esc(l.url) + '" target="_blank" rel="noopener">View</a>' +
-      '<button class="btn act" data-act="contact">Contact</button>' +
-      '<button class="btn act" data-act="showing">Showing</button>' +
-      '<button class="btn act" data-act="note">Note</button>' +
-      '<button class="btn act ' + (l.passed ? "on" : "") + '" data-act="pass">' + (l.passed ? "Passed" : "Pass") + "</button>" +
+      (OWNER ?
+        ('<button class="btn act" data-act="contact">Contact</button>' +
+         '<button class="btn act" data-act="showing">Showing</button>' +
+         '<button class="btn act" data-act="note">Note</button>') : "") +
+      '<button class="btn act ' + (l.passed ? "on" : "") + '" data-act="pass">' + (l.passed ? "Hidden" : "Hide") + "</button>" +
       "</div>" +
       "</div></div>";
   }
@@ -135,8 +138,8 @@
     document.getElementById("stats").innerHTML =
       stat(live.length, "Live") +
       stat(all.filter(function (l) { return l.isNew; }).length, "New", "s-new") +
-      stat(all.filter(function (l) { return l.contacted; }).length, "Contacted", "s-contacted") +
-      stat(all.filter(function (l) { return l.status === "showing_scheduled"; }).length, "Showings", "s-showing") +
+      (OWNER ? stat(all.filter(function (l) { return l.contacted; }).length, "Contacted", "s-contacted") : "") +
+      (OWNER ? stat(all.filter(function (l) { return l.status === "showing_scheduled"; }).length, "Showings", "s-showing") : "") +
       stat((DATA.archived || []).length, "Archived", "s-off");
 
     var host = document.getElementById("grid");
@@ -201,7 +204,7 @@
   // ---------- wire up ----------
   function bind() {
     document.getElementById("hoodSel").innerHTML = hoodOptions();
-    document.getElementById("gen").textContent = "Updated " + new Date(DATA.generatedAt).toLocaleString();
+    document.getElementById("gen").textContent = (OWNER ? "\uD83D\uDD12 Private \u00b7 " : "\uD83D\uDC65 Shared \u00b7 ") + "Updated " + new Date(DATA.generatedAt).toLocaleString();
     var c = DATA.criteria || {};
     document.getElementById("crit").textContent =
       (c.beds || "") + " · " + (c.budgetTotal || "") + " · " + (c.moveIn || "");
