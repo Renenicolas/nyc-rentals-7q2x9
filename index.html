@@ -89,6 +89,16 @@
   .ct .cn{font-weight:600} .ct .cmut{color:var(--mut)} .ct a{color:var(--acc)}
   .ct .stat{font-size:10.5px;padding:2px 7px;border-radius:6px}
   .stat-reply{background:rgba(245,166,35,.18);color:var(--showing)} .stat-neg{background:rgba(33,192,122,.18);color:var(--new)} .stat-wait{background:#262b35;color:var(--mut)}
+  .thr{border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:12px;background:var(--panel2)}
+  .thr-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin-bottom:8px}
+  .thr-head .ta{font-weight:700} .thr-head .tb{color:var(--mut);font-size:12px}
+  .msg{font-size:12.5px;padding:5px 0;border-top:1px dashed var(--line)}
+  .msg .who{font-weight:700;font-size:10.5px;text-transform:uppercase;letter-spacing:.4px}
+  .msg.me .who{color:var(--acc)} .msg.broker .who{color:var(--showing)}
+  .reply{margin-top:9px;background:rgba(33,192,122,.07);border:1px solid rgba(33,192,122,.3);border-radius:8px;padding:9px 11px}
+  .reply .rl{font-size:10.5px;font-weight:700;color:var(--new);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px}
+  .reply .rt{font-size:12.5px;line-height:1.5}
+  .reply .copy{margin-top:7px;font-size:11.5px;background:var(--new);color:#03210f;border:none;border-radius:6px;padding:5px 11px;font-weight:700;cursor:pointer}
   #toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:#fff;color:#111;padding:10px 18px;border-radius:10px;font-weight:600;font-size:13px;opacity:0;pointer-events:none;transition:.25s;box-shadow:0 8px 30px rgba(0,0,0,.4);z-index:50}
   #toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
 </style>
@@ -134,6 +144,7 @@
       <option value="beds">Most beds</option>
     </select>
     <button id="toursBtn" class="btn ctrlbtn">📅 Tours</button>
+    <button id="messagesBtn" class="btn ctrlbtn" style="display:none">💬 Messages</button>
     <button id="contactsBtn" class="btn ctrlbtn ghost" style="display:none">📇 Contacts</button>
     <button id="markAll" class="btn ctrlbtn ghost">Mark all seen</button>
     <button id="export" class="btn ctrlbtn ghost">Export CSV</button>

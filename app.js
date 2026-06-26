@@ -225,6 +225,8 @@
     document.getElementById("toursBtn").addEventListener("click", openTours);
     var cBtn = document.getElementById("contactsBtn");
     if (OWNER && (DATA.contacts || []).length) { cBtn.style.display = ""; cBtn.addEventListener("click", openContacts); }
+    var mBtn = document.getElementById("messagesBtn");
+    if (OWNER && (DATA.threads || []).length) { mBtn.style.display = ""; mBtn.addEventListener("click", openMessages); }
     document.getElementById("modalClose").addEventListener("click", closeModal);
     document.getElementById("modal").addEventListener("click", function (e) { if (e.target.id === "modal") closeModal(); });
 
@@ -262,6 +264,32 @@
     }).join("");
     openModal("\uD83D\uDCC5 Apartment Tours (" + tours.length + ")", html);
   }
+  function openMessages() {
+    var thr = DATA.threads || [];
+    var order = { "awaiting your reply": 0, "in negotiation": 1, "awaiting broker": 2 };
+    thr = thr.slice().sort(function (a, b) { return (order[a.status] || 9) - (order[b.status] || 9); });
+    var statCls = function (s) { return /negotiation/.test(s) ? "stat-neg" : /your reply/.test(s) ? "stat-reply" : "stat-wait"; };
+    var html = thr.map(function (t, i) {
+      var msgs = (t.msgs || []).map(function (m) {
+        return '<div class="msg ' + m.from + '"><span class="who">' + (m.from === "me" ? "You" : esc(t.broker || "Broker")) + ' \u00b7 ' + esc(m.date || "") + '</span><div>' + esc(m.text) + '</div></div>';
+      }).join("");
+      var rid = "reply" + i;
+      return '<div class="thr"><div class="thr-head"><div><span class="ta">' + esc(t.addr) + '</span> <span class="tb">' + esc(t.broker || "") + ' \u00b7 ' + esc(t.channel) + '</span></div>' +
+        '<span class="stat ' + statCls(t.status) + '">' + esc(t.status) + '</span></div>' +
+        msgs +
+        '<div class="reply"><div class="rl">\u2728 Suggested reply</div><div class="rt" id="' + rid + '">' + esc(t.suggestedReply) + '</div>' +
+        '<button class="copy" data-copy="' + rid + '">Copy reply</button></div></div>';
+    }).join("");
+    openModal("\uD83D\uDCAC Broker Messages (" + thr.length + ") \u2014 private", html);
+    document.getElementById("modalBody").addEventListener("click", function (e) {
+      var b = e.target.closest("[data-copy]"); if (!b) return;
+      var txt = document.getElementById(b.getAttribute("data-copy")).textContent;
+      navigator.clipboard && navigator.clipboard.writeText(txt);
+      b.textContent = "Copied \u2713";
+      setTimeout(function () { b.textContent = "Copy reply"; }, 1500);
+    });
+  }
+
   function openContacts() {
     var cs = DATA.contacts || [];
     var statCls = function (s) { return /negotiation/.test(s) ? "stat-neg" : /your reply/.test(s) ? "stat-reply" : "stat-wait"; };
