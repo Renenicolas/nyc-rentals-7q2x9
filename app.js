@@ -268,15 +268,31 @@
     document.getElementById("modalBody").innerHTML = html;
     document.getElementById("modal").classList.add("open");
   }
+  function dayLabel(d) {
+    var dt = new Date(d + "T12:00:00");
+    var today = new Date(); var todayStr = today.toISOString().slice(0, 10);
+    var tmr = new Date(today.getTime() + 86400000).toISOString().slice(0, 10);
+    var lbl = dt.toLocaleDateString(undefined, { weekday: "long", month: "short", day: "numeric" });
+    if (d === todayStr) lbl += ' <span class="daytag today">TODAY</span>';
+    else if (d === tmr) lbl += ' <span class="daytag">TOMORROW</span>';
+    return lbl;
+  }
+  function tourRow(t) {
+    var vid = t.video ? '<a href="' + esc((t.video.split(" ")[0]) || t.video) + '" target="_blank" rel="noopener">\u25B6 Watch video</a> ' + esc(t.video.indexOf("pw") > -1 ? "(" + t.video.split("(")[1] : "") : "";
+    return '<div class="tour' + (t.priority ? ' prio' : '') + '"><div class="when">' + esc(t.time || "By appt") + (t.priority ? ' \u2B50' : '') + '</div>' +
+      '<div><div class="ta">' + esc(t.addr) + '<span class="ttype">' + esc(t.type) + '</span></div>' +
+      '<div class="tmeta">' + esc(t.neighborhood || "") + (t.note ? " \u00b7 " + esc(t.note) : "") + '</div>' + vid + '</div></div>';
+  }
   function openTours() {
     var tours = DATA.tours || [];
     if (!tours.length) { openModal("\uD83D\uDCC5 Tours", '<p class="cmut">No tours posted yet. This updates automatically.</p>'); return; }
-    var html = tours.map(function (t) {
-      var vid = t.video ? '<a href="' + esc(t.video.split(" ")[0]) + '" target="_blank" rel="noopener">\u25B6 Watch video</a> ' + esc(t.video.indexOf("pw") > -1 ? "(" + t.video.split("(")[1] : "") : "";
-      return '<div class="tour"><div class="when">' + esc(t.when) + '</div>' +
-        '<div><div class="ta">' + esc(t.addr) + '<span class="ttype">' + esc(t.type) + '</span></div>' +
-        '<div class="tmeta">' + esc(t.neighborhood || "") + (t.note ? " \u00b7 " + esc(t.note) : "") + '</div>' + vid + '</div></div>';
+    var dated = tours.filter(function (t) { return t.date; }).sort(function (a, b) { return a.date.localeCompare(b.date) || (a.sortMin || 0) - (b.sortMin || 0); });
+    var undated = tours.filter(function (t) { return !t.date; });
+    var byDay = {}; dated.forEach(function (t) { (byDay[t.date] = byDay[t.date] || []).push(t); });
+    var html = Object.keys(byDay).sort().map(function (d) {
+      return '<div class="dayhdr">' + dayLabel(d) + '</div>' + byDay[d].map(tourRow).join("");
     }).join("");
+    if (undated.length) html += '<div class="dayhdr">By appointment / video tours</div>' + undated.map(tourRow).join("");
     openModal("\uD83D\uDCC5 Apartment Tours (" + tours.length + ")", html);
   }
   function openMessages() {

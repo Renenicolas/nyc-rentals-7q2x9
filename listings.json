@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-06-26T21:03:09.489Z",
+  "generatedAt": "2026-06-26T21:16:27.490Z",
   "mode": "shared",
   "criteria": {
     "beds": "4-5 BR",
@@ -2821,68 +2821,147 @@
   "archived": [],
   "tours": [
     {
+      "addr": "315 E 10th St #2R",
+      "neighborhood": "East Village",
+      "type": "In-person",
+      "date": "2026-06-26",
+      "time": "6:00 PM",
+      "sortMin": 1080,
+      "video": null,
+      "note": "Stop by tonight",
+      "priority": false
+    },
+    {
+      "addr": "“Balcony” unit — confirm address",
+      "neighborhood": "TBD",
+      "type": "In-person",
+      "date": "2026-06-27",
+      "time": "3:00 PM",
+      "sortMin": 900,
+      "video": null,
+      "note": "3 other parties interested — apply early (came via text)",
+      "priority": false
+    },
+    {
       "addr": "227 Waverly Place #3B",
       "neighborhood": "West Village",
       "type": "In-person",
-      "when": "Sun Jun 28, 12:00 PM",
+      "date": "2026-06-28",
+      "time": "12:00 PM",
+      "sortMin": 720,
       "video": null,
-      "note": "Tour required before any price talk"
+      "note": "Tour required before any price talk",
+      "priority": false
     },
     {
-      "addr": "208 East 7th Street #4A",
+      "addr": "136 E 36th St #9/10C",
+      "neighborhood": "Murray Hill",
+      "type": "In-person",
+      "date": "2026-06-28",
+      "time": "1:00–2:00 PM",
+      "sortMin": 780,
+      "video": null,
+      "note": "PRIORITY — most important one",
+      "priority": true
+    },
+    {
+      "addr": "208 E 7th St #4A",
       "neighborhood": "East Village",
       "type": "In-person",
-      "when": "Sun ~2:15 PM (only showing this week)",
+      "date": "2026-06-28",
+      "time": "2:15 PM",
+      "sortMin": 855,
       "video": null,
-      "note": "Tenant-occupied"
+      "note": "Only showing this week",
+      "priority": false
     },
     {
-      "addr": "236 East 5th Street #F4",
+      "addr": "84 Second Ave #3",
       "neighborhood": "East Village",
       "type": "In-person",
-      "when": "By appt",
+      "date": "2026-06-28",
+      "time": "4:30 PM",
+      "sortMin": 1050,
       "video": null,
-      "note": ""
+      "note": "Early-mid Aug move",
+      "priority": false
     },
     {
-      "addr": "176 Stanton Street #1R",
-      "neighborhood": "Lower East Side",
-      "type": "In-person",
-      "when": "By appt",
+      "addr": "121 Madison Ave (4BR, $10,995)",
+      "neighborhood": "NoMad",
+      "type": "By appt",
+      "date": null,
+      "time": "",
+      "sortMin": 0,
       "video": null,
-      "note": ""
+      "note": "New lead — text to schedule",
+      "priority": false
     },
     {
-      "addr": "352 East 13th Street #1",
+      "addr": "352 E 13th St #1",
       "neighborhood": "East Village",
       "type": "Video tour",
-      "when": "Anytime (Aug move)",
+      "date": null,
+      "time": "",
+      "sortMin": 0,
       "video": "https://vimeo.com (pw: 1234)",
-      "note": "Video walkthrough available"
+      "note": "Video walkthrough (Aug move)",
+      "priority": false
     },
     {
-      "addr": "25 Thompson Street #12S",
+      "addr": "25 Thompson St #12S",
       "neighborhood": "SoHo",
       "type": "Video tour",
-      "when": "Anytime",
+      "date": null,
+      "time": "",
+      "sortMin": 0,
       "video": "https://youtube.com/shorts/UR8QUkR8eHs",
-      "note": "YouTube walkthrough"
+      "note": "YouTube walkthrough",
+      "priority": false
     },
     {
-      "addr": "131 East 29th Street #4",
+      "addr": "131 E 29th St #4",
       "neighborhood": "Kips Bay",
       "type": "By appt",
-      "when": "Private showings being scheduled",
+      "date": null,
+      "time": "",
+      "sortMin": 0,
       "video": null,
-      "note": ""
+      "note": "Private showings being scheduled",
+      "priority": false
     },
     {
-      "addr": "442 East 13th Street #5",
+      "addr": "442 E 13th St #5",
       "neighborhood": "East Village",
-      "type": "In-person",
-      "when": "Mon 4-6 PM (sister unit, 8/10-8/20 move)",
+      "type": "By appt",
+      "date": null,
+      "time": "",
+      "sortMin": 0,
       "video": null,
-      "note": "Original rented; same layout available"
+      "note": "Sister unit, 8/10–8/20 move",
+      "priority": false
+    },
+    {
+      "addr": "236 E 5th St #F4",
+      "neighborhood": "East Village",
+      "type": "By appt",
+      "date": null,
+      "time": "",
+      "sortMin": 0,
+      "video": null,
+      "note": "",
+      "priority": false
+    },
+    {
+      "addr": "176 Stanton St #1R",
+      "neighborhood": "Lower East Side",
+      "type": "By appt",
+      "date": null,
+      "time": "",
+      "sortMin": 0,
+      "video": null,
+      "note": "",
+      "priority": false
     }
   ]
 }
