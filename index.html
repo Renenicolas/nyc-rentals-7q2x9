@@ -197,20 +197,37 @@
   var SHARED_HASH="55f97fea238e6745a702b80bf98e2dd82efe766fc68a2c378fcc2a840b18efa3";
   var KEY="nycRentalsAuth";
   var MODE_KEY="nycRentalsMode";
-  async function sha(s){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");}
+  async function sha(s){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");}
   function unlock(){document.getElementById("gate").style.display="none";}
+
   var stored=sessionStorage.getItem(KEY)||localStorage.getItem(KEY);
-  if(stored===OWNER_HASH||stored===SHARED_HASH){unlock();}
+  if(stored===OWNER_HASH){
+    var cachedPriv=sessionStorage.getItem("nycPrivData");
+    if(cachedPriv){
+      sessionStorage.setItem(MODE_KEY,"owner");
+      function fireReady(){document.dispatchEvent(new CustomEvent("nycPrivDataReady",{detail:{cached:cachedPriv}}));}
+      if(document.readyState==="loading"){document.addEventListener("DOMContentLoaded",function(){fireReady();unlock();});}
+      else{fireReady();unlock();}
+    } else {
+      var gp=document.querySelector("#gate p");
+      if(gp)gp.textContent="Enter your private password to load your full view.";
+    }
+  } else if(stored===SHARED_HASH){
+    sessionStorage.setItem(MODE_KEY,"shared");
+    unlock();
+  }
+
   async function tryPw(){
-    var v=document.getElementById("gpw").value;
+    var v=document.getElementById("gpw").value.trim();
     var h=await sha(v);
     if(h===OWNER_HASH){
       sessionStorage.setItem(KEY,h);localStorage.setItem(KEY,h);
-      sessionStorage.setItem(MODE_KEY,"owner");sessionStorage.setItem("nycPw",v);
+      sessionStorage.setItem(MODE_KEY,"owner");localStorage.setItem(MODE_KEY,"owner");
+      document.dispatchEvent(new CustomEvent("nycOwnerUnlock",{detail:{pw:v}}));
       unlock();
     } else if(h===SHARED_HASH){
       sessionStorage.setItem(KEY,h);localStorage.setItem(KEY,h);
-      sessionStorage.setItem(MODE_KEY,"shared");sessionStorage.removeItem("nycPw");
+      sessionStorage.setItem(MODE_KEY,"shared");localStorage.setItem(MODE_KEY,"shared");
       unlock();
     } else {
       document.getElementById("gerr").textContent="Wrong password";
