@@ -3,55 +3,7 @@
   "use strict";
 
   var DATA = window.RENTAL_DATA || { listings: [], brokers: {}, criteria: {} };
-  // ---- Decrypt private payload if owner mode ----
-  var MODE = DATA.mode || "shared";
-  (function() {
-    var storedMode = sessionStorage.getItem("nycRentalsMode");
-    var storedPw = sessionStorage.getItem("nycPw");
-    if (storedMode === "owner" && storedPw && DATA.privateEncrypted) {
-      // Decrypt using Web Crypto
-      var enc2 = DATA.privateEncrypted;
-      var fromB64 = function(s){ var b=atob(s);var a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a; };
-      crypto.subtle.importKey("raw", new TextEncoder().encode(storedPw), {name:"PBKDF2"}, false, ["deriveKey"])
-        .then(function(km){ return crypto.subtle.deriveKey({name:"PBKDF2",salt:fromB64(enc2.salt),iterations:100000,hash:"SHA-256"}, km, {name:"AES-GCM",length:256}, false, ["decrypt"]); })
-        .then(function(key){ return crypto.subtle.decrypt({name:"AES-GCM",iv:fromB64(enc2.iv)}, key, fromB64(enc2.data)); })
-        .then(function(plain){
-          var priv = JSON.parse(new TextDecoder().decode(plain));
-          // Merge private data into DATA
-          DATA.contacts = priv.contacts || [];
-          DATA.threads = priv.threads || [];
-          DATA.brokers = priv.brokers || {};
-          DATA.mode = "owner";
-          // Merge per-listing private fields
-          var lp = priv.listingPrivate || {};
-          DATA.listings = DATA.listings.map(function(l){
-            var p = lp[l.id];
-            if (!p) return l;
-            return Object.assign({}, l, {
-              contacted: p.contacted,
-              contactedDate: p.contactedDate,
-              broker: p.broker,
-              notes: p.notes,
-              messages: p.messages,
-              status: p.status || l.status,
-              showings: p.showings,
-            });
-          });
-          // Re-render with owner data
-          if (typeof render === "function") render();
-          if (typeof bind === "function") {
-            // Show contacts/messages buttons
-            var cBtn=document.getElementById("contactsBtn");
-            if(cBtn&&DATA.contacts.length){cBtn.style.display="";}
-            var mBtn=document.getElementById("messagesBtn");
-            if(mBtn&&DATA.threads.length){mBtn.style.display="";}
-          }
-        })
-        .catch(function(e){ console.error("Decryption failed:", e); });
-    } else if (storedMode === "owner") {
-      DATA.mode = "owner";
-    }
-  })();
+  function isOwner(){return DATA.mode==="owner"||sessionStorage.getItem("nycRentalsMode")==="owner";}
 
   var LS_KEY = "nycRentalsState_v1";
 
@@ -312,6 +264,46 @@
     var csv=rows.map(function(r){return r.map(function(c){return'"'+String(c).replace(/"/g,'""')+'"';}).join(",");}).join("\n");
     var a=document.createElement("a");a.href="data:text/csv;charset=utf-8,"+encodeURIComponent(csv);a.download="nyc-rentals-"+new Date().toISOString().slice(0,10)+".csv";a.click();
   }
+
+
+  // ---- Owner mode: event-driven decrypt ----
+  function mergePrivData(priv) {
+    DATA.contacts = priv.contacts || [];
+    DATA.threads = priv.threads || [];
+    DATA.brokers = priv.brokers || {};
+    DATA.mode = "owner";
+    var lp = priv.listingPrivate || {};
+    DATA.listings = DATA.listings.map(function(l){
+      var p = lp[l.id]; if(!p) return l;
+      return Object.assign({},l,{contacted:p.contacted,contactedDate:p.contactedDate,broker:p.broker,notes:p.notes||"",messages:p.messages||[],status:p.status||l.status,showings:p.showings||[]});
+    });
+    var cBtn=document.getElementById("contactsBtn");
+    if(cBtn&&DATA.contacts.length)cBtn.style.display="";
+    var mBtn=document.getElementById("messagesBtn");
+    if(mBtn&&DATA.threads.length)mBtn.style.display="";
+    var gen=document.getElementById("gen");
+    if(gen)gen.textContent="🔒 Private · Updated "+new Date(DATA.generatedAt).toLocaleString();
+    render();
+  }
+
+  document.addEventListener("nycOwnerUnlock",function(e){
+    var pw=e.detail&&e.detail.pw; if(!pw||!DATA.privateEncrypted)return;
+    var enc=DATA.privateEncrypted;
+    var b64=function(s){var b=atob(s);var a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a;};
+    crypto.subtle.importKey("raw",new TextEncoder().encode(pw),{name:"PBKDF2"},false,["deriveKey"])
+      .then(function(km){return crypto.subtle.deriveKey({name:"PBKDF2",salt:b64(enc.salt),iterations:100000,hash:"SHA-256"},km,{name:"AES-GCM",length:256},false,["decrypt"]);})
+      .then(function(key){return crypto.subtle.decrypt({name:"AES-GCM",iv:b64(enc.iv)},key,b64(enc.data));})
+      .then(function(plain){
+        var priv=JSON.parse(new TextDecoder().decode(plain));
+        try{sessionStorage.setItem("nycPrivData",JSON.stringify(priv));}catch(e){}
+        mergePrivData(priv);
+      })
+      .catch(function(err){console.error("Decrypt error:",err);});
+  });
+
+  document.addEventListener("nycPrivDataReady",function(e){
+    try{if(e.detail&&e.detail.cached)mergePrivData(JSON.parse(e.detail.cached));}catch(ex){console.error(ex);}
+  });
 
   bind(); render();
 })();
