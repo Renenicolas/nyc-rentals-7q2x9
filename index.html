@@ -44,14 +44,10 @@
   .ph{height:150px;background:#22262f center/cover no-repeat}
   .ph.noph{display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:12px}
   .newbadge{position:absolute;top:10px;left:10px;background:var(--new);color:#03210f;font-weight:800;font-size:10.5px;letter-spacing:.6px;padding:3px 8px;border-radius:6px}
-  /* Star button - sits in card body */
-  .card-top-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:2px}
-  .card-top-row .badges{flex:1;min-width:0}
-  .star-btn{display:flex;flex-direction:column;align-items:center;gap:1px;background:var(--panel2);border:1px solid var(--line);color:var(--mut);cursor:pointer;border-radius:8px;padding:4px 8px;min-width:50px;transition:.15s;flex-shrink:0}
-  .star-btn .star-icon{font-size:18px;line-height:1.1}
-  .star-btn .star-lbl{font-size:9px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;margin-top:1px}
-  .star-btn:hover{border-color:#f5c842;color:#f5c842;background:rgba(245,200,66,.1)}
-  .star-btn.starred{color:#f5c842;background:rgba(245,200,66,.15);border-color:rgba(245,200,66,.5)}
+  /* Star button */
+  .star-btn{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.55);border:none;color:#ccc;font-size:20px;cursor:pointer;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;transition:.15s;z-index:5}
+  .star-btn:hover{background:rgba(245,200,66,.3);color:#f5c842}
+  .star-btn.starred{color:#f5c842;background:rgba(245,200,66,.2)}
   .s-star{background:rgba(245,200,66,.18);color:#f5c842}
   /* Amenity split */
   .amen-section{display:flex;flex-direction:column;gap:4px;margin-top:4px}
@@ -145,7 +141,7 @@
 <body>
 <div id="gate">
   <h2>🗽 NYC Rentals</h2>
-  <p>Enter the shared password to view the listings.</p>
+  <p>Enter your password to view listings.</p>
   <input id="gpw" type="password" placeholder="Password" autocomplete="off" />
   <button id="gbtn">Unlock</button>
   <div class="err" id="gerr"></div>
@@ -189,7 +185,6 @@
     <button id="messagesBtn" class="btn ctrlbtn" style="display:none">💬 Messages</button>
     <button id="contactsBtn" class="btn ctrlbtn ghost" style="display:none">📇 Contacts</button>
     <button id="markAll" class="btn ctrlbtn ghost">Mark all seen</button>
-    <button id="logoutBtn" class="btn ctrlbtn ghost" title="Switch account / back to password">🔒 Switch account</button>
     <button id="export" class="btn ctrlbtn ghost">Export CSV</button>
   </div>
 </header>
@@ -198,12 +193,29 @@
 <div id="toast"></div>
 <script>
 (function(){
-  var HASH="703390318bd55aef50b7823d2b90a846debff99e6e3d401a24a921b733912a6d";
+  var OWNER_HASH="703390318bd55aef50b7823d2b90a846debff99e6e3d401a24a921b733912a6d";
+  var SHARED_HASH="55f97fea238e6745a702b80bf98e2dd82efe766fc68a2c378fcc2a840b18efa3";
   var KEY="nycRentalsAuth";
+  var MODE_KEY="nycRentalsMode";
   async function sha(s){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");}
   function unlock(){document.getElementById("gate").style.display="none";}
-  if(sessionStorage.getItem(KEY)===HASH||localStorage.getItem(KEY)===HASH){unlock();}
-  async function tryPw(){var v=document.getElementById("gpw").value;var h=await sha(v);if(h===HASH){sessionStorage.setItem(KEY,HASH);localStorage.setItem(KEY,HASH);unlock();}else{document.getElementById("gerr").textContent="Wrong password";}}
+  var stored=sessionStorage.getItem(KEY)||localStorage.getItem(KEY);
+  if(stored===OWNER_HASH||stored===SHARED_HASH){unlock();}
+  async function tryPw(){
+    var v=document.getElementById("gpw").value;
+    var h=await sha(v);
+    if(h===OWNER_HASH){
+      sessionStorage.setItem(KEY,h);localStorage.setItem(KEY,h);
+      sessionStorage.setItem(MODE_KEY,"owner");sessionStorage.setItem("nycPw",v);
+      unlock();
+    } else if(h===SHARED_HASH){
+      sessionStorage.setItem(KEY,h);localStorage.setItem(KEY,h);
+      sessionStorage.setItem(MODE_KEY,"shared");sessionStorage.removeItem("nycPw");
+      unlock();
+    } else {
+      document.getElementById("gerr").textContent="Wrong password";
+    }
+  }
   document.getElementById("gbtn").addEventListener("click",tryPw);
   document.getElementById("gpw").addEventListener("keydown",function(e){if(e.key==="Enter")tryPw();});
 })();
