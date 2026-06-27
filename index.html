@@ -23,6 +23,7 @@
   .statbox .l{font-size:11px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
   .statbox.s-new .n{color:var(--new)} .statbox.s-contacted .n{color:var(--contacted)}
   .statbox.s-showing .n{color:var(--showing)} .statbox.s-off .n{color:var(--off)}
+  .statbox.s-star .n{color:#f5c842}
   .controls{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
   input,select{background:var(--panel2);color:var(--txt);border:1px solid var(--line);border-radius:8px;padding:7px 10px;font-size:13px;outline:none}
   input:focus,select:focus{border-color:var(--acc)}
@@ -39,9 +40,38 @@
   .card{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;position:relative;display:flex;flex-direction:column;transition:border-color .15s,transform .1s}
   .card:hover{border-color:#3a4456;transform:translateY(-1px)}
   .card.off{opacity:.6}
+  .card.is-starred{border-color:#f5c842;box-shadow:0 0 0 1px rgba(245,200,66,.25)}
   .ph{height:150px;background:#22262f center/cover no-repeat}
   .ph.noph{display:flex;align-items:center;justify-content:center;color:var(--mut);font-size:12px}
   .newbadge{position:absolute;top:10px;left:10px;background:var(--new);color:#03210f;font-weight:800;font-size:10.5px;letter-spacing:.6px;padding:3px 8px;border-radius:6px}
+  /* Star button */
+  .star-btn{position:absolute;top:8px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.55);border:none;color:#ccc;font-size:20px;cursor:pointer;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;transition:.15s;z-index:5}
+  .star-btn:hover{background:rgba(245,200,66,.3);color:#f5c842}
+  .star-btn.starred{color:#f5c842;background:rgba(245,200,66,.2)}
+  .s-star{background:rgba(245,200,66,.18);color:#f5c842}
+  /* Amenity split */
+  .amen-section{display:flex;flex-direction:column;gap:4px;margin-top:4px}
+  .amen-row{display:flex;flex-wrap:wrap;gap:4px;align-items:center}
+  .amen-icon{font-size:11px;color:var(--mut);white-space:nowrap;margin-right:2px}
+  .chip-unit{background:rgba(91,140,255,.12);border-color:rgba(91,140,255,.3);color:#bcd1ff}
+  .chip-bldg{background:rgba(33,192,122,.1);border-color:rgba(33,192,122,.25);color:#7ee8bc}
+  /* Transit */
+  .transit-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px;font-size:11px;color:var(--mut)}
+  .ts{display:flex;align-items:center;gap:3px;white-space:nowrap}
+  .tline{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;background:#888;color:#fff;font-size:10px;font-weight:800;flex-shrink:0}
+  .tline.t6{background:#009B3A}
+  .tw{color:var(--mut);font-size:10px}
+  /* Grocery */
+  .grocery-row{display:flex;flex-wrap:wrap;gap:8px;margin-top:3px;font-size:11px;color:var(--mut)}
+  .gi{white-space:nowrap}
+  /* Zillow badge */
+  .z-link{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;border-radius:4px;background:#0068ff;color:#fff;font-size:9px;font-weight:800;text-decoration:none;margin-left:4px;vertical-align:middle}
+  .z-link:hover{opacity:.8}
+  /* Starred section */
+  .starred-sec h2{color:#f5c842}
+  .tour-star{font-size:13px}
+  /* Tour star in tours modal */
+  .tour.prio .when{color:#f5c842}
   .srcbadge{position:absolute;top:10px;right:10px;font-size:9.5px;font-weight:700;letter-spacing:.4px;padding:3px 7px;border-radius:6px;background:rgba(0,0,0,.65);color:#fff}
   .src-craigslist{background:rgba(80,40,140,.9)} .src-renthop{background:rgba(20,110,90,.9)} .src-streeteasy{background:rgba(40,70,150,.9)}
   /* gate */
@@ -127,6 +157,7 @@
     <input id="q" placeholder="Search address, neighborhood, amenities…" />
     <select id="hoodSel"></select>
     <select id="statusSel">
+      <option value="starred">⭐ Starred only</option>
       <option value="all">All statuses</option>
       <option value="new">🟢 New only</option>
       <option value="available">Available (not contacted)</option>
@@ -142,7 +173,8 @@
     <input id="minP" type="number" placeholder="Min $" />
     <input id="maxP" type="number" placeholder="Max $" />
     <select id="sortSel">
-      <option value="source" selected>Sort: Source (reliability)</option>
+      <option value="starred" selected>⭐ Starred first</option>
+      <option value="source">Sort: Source (reliability)</option>
       <option value="hood">Sort: Location</option>
       <option value="price_asc">Price ↑</option>
       <option value="price_desc">Price ↓</option>
@@ -161,7 +193,7 @@
 <div id="toast"></div>
 <script>
 (function(){
-  var HASH="55f97fea238e6745a702b80bf98e2dd82efe766fc68a2c378fcc2a840b18efa3";
+  var HASH="703390318bd55aef50b7823d2b90a846debff99e6e3d401a24a921b733912a6d";
   var KEY="nycRentalsAuth";
   async function sha(s){var b=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,"0")).join("");}
   function unlock(){document.getElementById("gate").style.display="none";}
