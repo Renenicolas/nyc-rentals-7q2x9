@@ -111,12 +111,12 @@
     var bldgHtml=amenRow(bldg,"chip-bldg","\uD83C\uDFE2 Building");
     var tHtml=transitHtml(l); var gHtml=groceryHtml(l);
     return'<div class="card'+(l.offMarket?" off":"")+(l.starred?" is-starred":"")+'" data-id="'+l.id+'">'+
-      photo+newBadge+srcBadge+starBtn+
+      photo+newBadge+srcBadge+
       '<div class="body">'+
       '<div class="row1"><span class="price">'+fmt$(l.priceNum)+"</span>"+pp+"</div>"+
       '<div class="addr">'+esc(l.building)+(l.unit?" #"+esc(l.unit):"")+zillowLink+"</div>"+
       '<div class="meta">'+esc(l.neighborhood)+" · "+(l.beds||"?")+" bd / "+(l.baths||"?")+" ba"+(l.sqft?" · "+l.sqft+" ft²":"")+" · Aug 2026</div>"+
-      '<div class="badges"><span class="badge '+sm.cls+'">'+sm.label+"</span>"+(l.starred?'<span class="badge s-star">⭐ Starred</span>':"")+"</div>"+
+      '<div class="card-top-row"><div class="badges"><span class="badge '+sm.cls+'">'+sm.label+'</span>'+(l.starred?'<span class="badge s-star">⭐ Starred</span>':'')+'</div><button class="star-btn'+(l.starred?' starred':'')+'" data-act="star"><span class="star-icon">'+(l.starred?'★':'☆')+'</span><span class="star-lbl">'+(l.starred?'Starred':'Star')+'</span></button></div>'+
       (inUnitHtml||bldgHtml?'<div class="amen-section">'+inUnitHtml+bldgHtml+"</div>":"")+
       tHtml+gHtml+
       (OWNER?brokerHtml+showHtml+noteHtml:"")+
@@ -175,6 +175,7 @@
   function doNote(l){var v=prompt("Note for "+l.building+":",l.note||"");if(v==null)return;ov(l.id).note=v.trim();persist();render();}
   function doPass(l){var o=ov(l.id);o.passed=!o.passed;o.status=o.passed?"passed":"seen";persist();render();}
   function doStar(l){var o=ov(l.id);o.liked=!l.starred;persist();toast(o.liked?"\u2B50 Starred! Floated to top.":"Star removed.");render();}
+  function doLogout(){var K="nycRentalsAuth";sessionStorage.removeItem(K);localStorage.removeItem(K);location.reload();}
   function markSeen(id){if(state.everSeen.indexOf(id)===-1){state.everSeen.push(id);persist();}}
   function toast(msg){var t=document.getElementById("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove("show");},2600);}
 
@@ -191,6 +192,7 @@
     document.getElementById("minP").addEventListener("input",function(e){ui.minP=e.target.value;render();});
     document.getElementById("maxP").addEventListener("input",function(e){ui.maxP=e.target.value;render();});
     document.getElementById("markAll").addEventListener("click",function(){listings().forEach(function(l){markSeen(l.id);});render();toast("All marked as seen.");});
+    document.getElementById("logoutBtn").addEventListener("click",doLogout);
     document.getElementById("export").addEventListener("click",exportCsv);
     document.getElementById("toursBtn").addEventListener("click",openTours);
     var cBtn=document.getElementById("contactsBtn");
