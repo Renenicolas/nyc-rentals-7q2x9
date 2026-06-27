@@ -194,7 +194,7 @@
     document.getElementById("minP").addEventListener("input",function(e){ui.minP=e.target.value;render();});
     document.getElementById("maxP").addEventListener("input",function(e){ui.maxP=e.target.value;render();});
     document.getElementById("markAll").addEventListener("click",function(){listings().forEach(function(l){markSeen(l.id);});render();toast("All marked as seen.");});
-    document.getElementById("logoutBtn").addEventListener("click",doLogout);
+    var lBtn=document.getElementById("logoutBtn");if(lBtn)lBtn.addEventListener("click",doLogout);
     document.getElementById("export").addEventListener("click",exportCsv);
     document.getElementById("toursBtn").addEventListener("click",openTours);
     var cBtn=document.getElementById("contactsBtn");
@@ -278,9 +278,11 @@
       return Object.assign({},l,{contacted:p.contacted,contactedDate:p.contactedDate,broker:p.broker,notes:p.notes||"",messages:p.messages||[],status:p.status||l.status,showings:p.showings||[]});
     });
     var cBtn=document.getElementById("contactsBtn");
-    if(cBtn&&DATA.contacts.length)cBtn.style.display="";
+    if(cBtn&&DATA.contacts.length){cBtn.style.display="";cBtn.onclick=openContacts;}
     var mBtn=document.getElementById("messagesBtn");
-    if(mBtn&&DATA.threads.length)mBtn.style.display="";
+    if(mBtn&&DATA.threads.length){mBtn.style.display="";mBtn.onclick=openMessages;}
+    var lBtn2=document.getElementById("logoutBtn");
+    if(lBtn2)lBtn2.onclick=doLogout;
     var gen=document.getElementById("gen");
     if(gen)gen.textContent="🔒 Private · Updated "+new Date(DATA.generatedAt).toLocaleString();
     render();
