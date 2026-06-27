@@ -3,6 +3,56 @@
   "use strict";
 
   var DATA = window.RENTAL_DATA || { listings: [], brokers: {}, criteria: {} };
+  // ---- Decrypt private payload if owner mode ----
+  var MODE = DATA.mode || "shared";
+  (function() {
+    var storedMode = sessionStorage.getItem("nycRentalsMode");
+    var storedPw = sessionStorage.getItem("nycPw");
+    if (storedMode === "owner" && storedPw && DATA.privateEncrypted) {
+      // Decrypt using Web Crypto
+      var enc2 = DATA.privateEncrypted;
+      var fromB64 = function(s){ var b=atob(s);var a=new Uint8Array(b.length);for(var i=0;i<b.length;i++)a[i]=b.charCodeAt(i);return a; };
+      crypto.subtle.importKey("raw", new TextEncoder().encode(storedPw), {name:"PBKDF2"}, false, ["deriveKey"])
+        .then(function(km){ return crypto.subtle.deriveKey({name:"PBKDF2",salt:fromB64(enc2.salt),iterations:100000,hash:"SHA-256"}, km, {name:"AES-GCM",length:256}, false, ["decrypt"]); })
+        .then(function(key){ return crypto.subtle.decrypt({name:"AES-GCM",iv:fromB64(enc2.iv)}, key, fromB64(enc2.data)); })
+        .then(function(plain){
+          var priv = JSON.parse(new TextDecoder().decode(plain));
+          // Merge private data into DATA
+          DATA.contacts = priv.contacts || [];
+          DATA.threads = priv.threads || [];
+          DATA.brokers = priv.brokers || {};
+          DATA.mode = "owner";
+          // Merge per-listing private fields
+          var lp = priv.listingPrivate || {};
+          DATA.listings = DATA.listings.map(function(l){
+            var p = lp[l.id];
+            if (!p) return l;
+            return Object.assign({}, l, {
+              contacted: p.contacted,
+              contactedDate: p.contactedDate,
+              broker: p.broker,
+              notes: p.notes,
+              messages: p.messages,
+              status: p.status || l.status,
+              showings: p.showings,
+            });
+          });
+          // Re-render with owner data
+          if (typeof render === "function") render();
+          if (typeof bind === "function") {
+            // Show contacts/messages buttons
+            var cBtn=document.getElementById("contactsBtn");
+            if(cBtn&&DATA.contacts.length){cBtn.style.display="";}
+            var mBtn=document.getElementById("messagesBtn");
+            if(mBtn&&DATA.threads.length){mBtn.style.display="";}
+          }
+        })
+        .catch(function(e){ console.error("Decryption failed:", e); });
+    } else if (storedMode === "owner") {
+      DATA.mode = "owner";
+    }
+  })();
+
   var LS_KEY = "nycRentalsState_v1";
 
   function loadState() { try { return JSON.parse(localStorage.getItem(LS_KEY)) || {}; } catch (e) { return {}; } }
@@ -95,16 +145,16 @@
   }
 
   function card(l){
-    var sm=STATUS_META[OWNER?l.status:(l.isNew?"new":"seen")]||STATUS_META.seen;
+    var sm=STATUS_META[isOwner()?l.status:(l.isNew?"new":"seen")]||STATUS_META.seen;
     var photo=l.photo?'<div class="ph" style="background-image:url(\''+esc(l.photo)+'\')"></div>':'<div class="ph noph">No photo</div>';
     var pp=l.perPerson4?'<span class="pp">'+fmt$(l.perPerson4)+'/person (÷4)</span>':"";
-    var brokerHtml=(l.broker&&OWNER)?'<div class="broker">'+esc(l.broker.name)+" · "+esc(l.broker.company||"")+"</div>":"";
+    var brokerHtml=(l.broker&&isOwner())?'<div class="broker">'+esc(l.broker.name)+" · "+esc(l.broker.company||"")+"</div>":"";
     var newBadge=l.isNew?'<span class="newbadge">NEW</span>':"";
     var srcBadge='<span class="srcbadge src-'+l.source+'">'+(SRC_META[l.source]||l.source)+'</span>';
     var zillowLink=l.zillowUrl?'<a class="z-link" href="'+esc(l.zillowUrl)+'" target="_blank" rel="noopener" title="Also on Zillow">Z</a>':"";
     var starBtn='<button class="star-btn'+(l.starred?" starred":"")+'" data-act="star">'+(l.starred?"★":"☆")+'</button>';
-    var showHtml=(l.showing&&OWNER)?'<div class="showing">Showing: '+esc(l.showing)+"</div>":"";
-    var noteHtml=(l.note&&OWNER)?'<div class="note">'+esc(l.note)+"</div>":"";
+    var showHtml=(l.showing&&isOwner())?'<div class="showing">Showing: '+esc(l.showing)+"</div>":"";
+    var noteHtml=(l.note&&isOwner())?'<div class="note">'+esc(l.note)+"</div>":"";
     var inUnit=l.inUnitAmenities||[];var bldg=l.buildingAmenities||[];
     if(!inUnit.length&&!bldg.length){inUnit=l.amenities||[];}
     var inUnitHtml=amenRow(inUnit,"chip-unit","\uD83C\uDFE0 In-unit");
@@ -119,10 +169,10 @@
       '<div class="card-top-row"><div class="badges"><span class="badge '+sm.cls+'">'+sm.label+'</span>'+(l.starred?'<span class="badge s-star">⭐ Starred</span>':'')+'</div><button class="star-btn'+(l.starred?' starred':'')+'" data-act="star"><span class="star-icon">'+(l.starred?'★':'☆')+'</span><span class="star-lbl">'+(l.starred?'Starred':'Star')+'</span></button></div>'+
       (inUnitHtml||bldgHtml?'<div class="amen-section">'+inUnitHtml+bldgHtml+"</div>":"")+
       tHtml+gHtml+
-      (OWNER?brokerHtml+showHtml+noteHtml:"")+
+      (isOwner()?brokerHtml+showHtml+noteHtml:"")+
       '<div class="actions">'+
       '<a class="btn view" href="'+esc(l.url)+'" target="_blank" rel="noopener">View</a>'+
-      (OWNER?'<button class="btn act" data-act="contact">Contact</button><button class="btn act" data-act="showing">Showing</button><button class="btn act" data-act="note">Note</button>':"")+
+      (isOwner()?'<button class="btn act" data-act="contact">Contact</button><button class="btn act" data-act="showing">Showing</button><button class="btn act" data-act="note">Note</button>':"")+
       '<button class="btn act'+(l.passed?" on":"")+'" data-act="pass">'+(l.passed?"Hidden":"Hide")+"</button>"+
       "</div></div></div>";
   }
@@ -134,8 +184,8 @@
       stat(live.length,"Live")+
       stat(all.filter(function(l){return l.starred;}).length,"Starred","s-star")+
       stat(all.filter(function(l){return l.isNew;}).length,"New","s-new")+
-      (OWNER?stat(all.filter(function(l){return l.contacted;}).length,"Contacted","s-contacted"):"")+
-      (OWNER?stat(all.filter(function(l){return l.status==="showing_scheduled"||l.status==="in_negotiation";}).length,"Active","s-showing"):"")+
+      (isOwner()?stat(all.filter(function(l){return l.contacted;}).length,"Contacted","s-contacted"):"")+
+      (isOwner()?stat(all.filter(function(l){return l.status==="showing_scheduled"||l.status==="in_negotiation";}).length,"Active","s-showing"):"")+
       stat((DATA.archived||[]).length,"Archived","s-off");
 
     var host=document.getElementById("grid");
@@ -181,7 +231,7 @@
 
   function bind(){
     document.getElementById("hoodSel").innerHTML=hoodOptions();
-    document.getElementById("gen").textContent=(OWNER?"\uD83D\uDD12 Private \u00b7 ":"\uD83D\uDC65 Shared \u00b7 ")+"Updated "+new Date(DATA.generatedAt).toLocaleString();
+    document.getElementById("gen").textContent=(isOwner()?"\uD83D\uDD12 Private \u00b7 ":"\uD83D\uDC65 Shared \u00b7 ")+"Updated "+new Date(DATA.generatedAt).toLocaleString();
     var c=DATA.criteria||{};
     document.getElementById("crit").textContent=(c.beds||"")+" · "+(c.budgetTotal||"")+" · "+(c.moveIn||"");
     document.getElementById("q").addEventListener("input",function(e){ui.q=e.target.value;render();});
@@ -196,9 +246,9 @@
     document.getElementById("export").addEventListener("click",exportCsv);
     document.getElementById("toursBtn").addEventListener("click",openTours);
     var cBtn=document.getElementById("contactsBtn");
-    if(OWNER&&(DATA.contacts||[]).length){cBtn.style.display="";cBtn.addEventListener("click",openContacts);}
+    if(isOwner()&&(DATA.contacts||[]).length){cBtn.style.display="";cBtn.addEventListener("click",openContacts);}
     var mBtn=document.getElementById("messagesBtn");
-    if(OWNER&&(DATA.threads||[]).length){mBtn.style.display="";mBtn.addEventListener("click",openMessages);}
+    if(isOwner()&&(DATA.threads||[]).length){mBtn.style.display="";mBtn.addEventListener("click",openMessages);}
     document.getElementById("modalClose").addEventListener("click",closeModal);
     document.getElementById("modal").addEventListener("click",function(e){if(e.target.id==="modal")closeModal();});
     document.getElementById("grid").addEventListener("click",function(e){
