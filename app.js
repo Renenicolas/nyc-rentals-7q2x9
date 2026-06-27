@@ -87,7 +87,7 @@
     var t=l.transit;if(!t)return"";
     var parts=[];
     if(t.sixTrain)parts.push('<span class="ts"><span class="tline t6">6</span>'+esc(t.sixTrain.station)+' <span class="tw">'+t.sixTrain.walkMin+'min</span></span>');
-    (t.other||[]).forEach(function(o){parts.push('<span class="ts"><span class="tline">'+esc(o.line)+'</span>'+esc(o.station)+' <span class="tw">'+o.walkMin+'min</span></span>');});
+    // other lines removed — 6 train only
     return parts.length?'<div class="transit-row">'+parts.join('')+'</div>':"";
   }
   function groceryHtml(l){
