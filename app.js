@@ -278,11 +278,23 @@
       return Object.assign({},l,{contacted:p.contacted,contactedDate:p.contactedDate,broker:p.broker,notes:p.notes||"",messages:p.messages||[],status:p.status||l.status,showings:p.showings||[]});
     });
     var cBtn=document.getElementById("contactsBtn");
-    if(cBtn&&DATA.contacts.length){cBtn.style.display="";cBtn.onclick=openContacts;}
+    if(cBtn&&DATA.contacts.length){
+      cBtn.style.display="";
+      cBtn.replaceWith(cBtn.cloneNode(true)); // remove stale listeners
+      var cBtn2=document.getElementById("contactsBtn");
+      cBtn2.style.display="";
+      cBtn2.addEventListener("click",openContacts);
+    }
     var mBtn=document.getElementById("messagesBtn");
-    if(mBtn&&DATA.threads.length){mBtn.style.display="";mBtn.onclick=openMessages;}
+    if(mBtn&&DATA.threads.length){
+      mBtn.style.display="";
+      mBtn.replaceWith(mBtn.cloneNode(true));
+      var mBtn2=document.getElementById("messagesBtn");
+      mBtn2.style.display="";
+      mBtn2.addEventListener("click",openMessages);
+    }
     var lBtn2=document.getElementById("logoutBtn");
-    if(lBtn2)lBtn2.onclick=doLogout;
+    if(lBtn2){lBtn2.replaceWith(lBtn2.cloneNode(true));document.getElementById("logoutBtn").addEventListener("click",doLogout);}
     var gen=document.getElementById("gen");
     if(gen)gen.textContent="🔒 Private · Updated "+new Date(DATA.generatedAt).toLocaleString();
     render();
